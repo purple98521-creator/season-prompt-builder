@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>季節と和の行事プロンプトビルダー</title>
+<meta name="description" content="選ぶだけで、季節感のある画像生成AI用プロンプトが組み上がる。春夏秋冬の情景・装い・配色・モチーフから選べるプロンプトビルダーです。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://steady-stardust-780912.netlify.app/">
+<meta property="og:title" content="季節と和の行事プロンプトビルダー">
+<meta property="og:description" content="選ぶだけで、季節感のある画像生成AI用プロンプトが組み上がる。春夏秋冬の情景・装い・配色・モチーフから選べます。">
+<meta property="og:image" content="https://steady-stardust-780912.netlify.app/ogp.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://steady-stardust-780912.netlify.app/ogp.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Layout: 左に引き出し（カード）を縦に積み、右にプロンプト欄を固定。季節を選ぶと差し色が変わる */
+:root{
+  --bg:#faf7f6; --surface:#ffffff; --line:#ece3e2; --ink:#3a2f33; --muted:#7d6f73;
+  --accent:#b4536a; --accent-soft:#f6e6ea; --accent-ink:#ffffff;
+  --display:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+  --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+:root[data-season="spring"]{--accent:#b4536a;--accent-soft:#f6e6ea}
+:root[data-season="summer"]{--accent:#2f5d8a;--accent-soft:#e3ecf5}
+:root[data-season="autumn"]{--accent:#b05a2a;--accent-soft:#f6e9df}
+:root[data-season="winter"]{--accent:#3d6b6a;--accent-soft:#e2eeed}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1d1a1c;--surface:#272326;--line:#3a3437;--ink:#efe7e9;--muted:#ad9fa4;--accent-ink:#1d1a1c;color-scheme:dark}
+  :root:not([data-theme="light"])[data-season="spring"],:root:not([data-theme="light"]):not([data-season]){--accent:#e59aab;--accent-soft:#3a2a30}
+  :root:not([data-theme="light"])[data-season="summer"]{--accent:#8db7e0;--accent-soft:#25303c}
+  :root:not([data-theme="light"])[data-season="autumn"]{--accent:#e39a6c;--accent-soft:#3a2c24}
+  :root:not([data-theme="light"])[data-season="winter"]{--accent:#8cc3c0;--accent-soft:#23332f}
+}
+:root[data-theme="dark"]{--bg:#1d1a1c;--surface:#272326;--line:#3a3437;--ink:#efe7e9;--muted:#ad9fa4;--accent-ink:#1d1a1c;--accent:#e59aab;--accent-soft:#3a2a30;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));transition:background .3s}
+.wrap{max-width:1180px;margin:0 auto;padding-block:40px 80px}
+header .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,4.5vw,40px);line-height:1.3;margin:.3em 0 .5em;color:var(--accent);text-wrap:balance}
+.lead{max-width:640px;color:var(--muted);font-size:14px;margin:0}
+.divider{height:1px;background:var(--line);margin:28px 0;position:relative}
+.divider::after{content:"";position:absolute;left:50%;top:-5px;width:9px;height:9px;background:var(--accent);transform:translateX(-50%) rotate(45deg)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:20px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 22px 24px;min-width:0}
+.card h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0;display:flex;align-items:baseline;gap:10px}
+.card h2 .num{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:400}
+.card .sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.btn-ghost{font:inherit;font-size:12px;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:5px 12px;cursor:pointer}
+.btn-ghost:hover{color:var(--accent);border-color:var(--accent)}
+.group-label{font-size:12px;color:var(--accent);font-weight:700;margin:16px 0 8px;letter-spacing:.06em}
+.group-label:first-of-type{margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.opt{display:block;text-align:left;font:inherit;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--accent)}
+.opt .jp{font-weight:700;font-size:13.5px;line-height:1.5;display:block}
+.opt .en{font-family:var(--mono);font-size:10.5px;color:var(--muted);line-height:1.45;display:block;margin-top:4px}
+.opt[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:13px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.season-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.season-bar .chip{font-family:var(--display);font-size:16px;padding:6px 20px}
+.toggle-row{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.switch{flex:none;width:44px;height:24px;border-radius:999px;border:none;background:var(--line);position:relative;cursor:pointer}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch[aria-checked="true"]::after{transform:translateX(20px);background:var(--accent-ink)}
+.field{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+.field label,.field .lbl{font-size:13px;font-weight:700}
+.field .hint{font-size:12px;color:var(--muted)}
+input[type=text],textarea{font:inherit;font-size:14px;width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+input[type=text]:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.note{font-size:12px;color:var(--muted);background:var(--accent-soft);border-radius:8px;padding:8px 12px;margin-top:12px}
+aside.out{position:sticky;top:max(16px,env(safe-area-inset-top,0px))}
+.out h2{justify-content:space-between}
+.count{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:400}
+#promptOutput{min-height:260px;margin-top:12px;font-family:var(--mono);font-size:12px;line-height:1.6;background:var(--accent-soft);border-color:transparent;resize:vertical}
+.btn{font:inherit;font-weight:700;font-size:14px;border-radius:10px;padding:11px;cursor:pointer;width:100%}
+.btn-primary{background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);margin-top:10px}
+.btn-secondary{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.foot{font-size:12px;color:var(--muted);margin-top:14px}
+.empty{font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">SEASONAL IMAGE PROMPT BUILDER</div>
+  <h1>季節と和の行事プロンプトビルダー</h1>
+  <p class="lead">情景・画風・人物・装い・配色・モチーフ ── 6つの引き出しから選ぶと、季節感のある画像生成AI用プロンプトがその場で組み上がります。季節を選ぶと、その季節に合う項目だけに絞り込めます。人物ポートレートのアレンジやキャッチコピーの書き足しもできます。</p>
+</header>
+<div class="divider"></div>
+
+<div class="layout">
+<div class="col" id="controls">
+
+  <section class="card">
+    <div class="card-head" style="border:none;margin:0;padding:0">
+      <div><h2>季節を選ぶ</h2><p class="sub">選んだ季節の項目だけを表示し、ランダムもその季節の中から選びます</p></div>
+    </div>
+    <div class="season-bar" id="seasonBar" style="margin-top:14px"></div>
+  </section>
+
+  <section class="card">
+    <div class="toggle-row">
+      <div><h2>人物ポートレートのアレンジ</h2><p class="sub">アップロードする人物写真の顔立ちを活かしつつ、季節の情景に溶け込むイラストとして再構成する指示を追加します</p></div>
+      <button class="switch" id="portraitSwitch" role="switch" aria-checked="false" aria-label="人物ポートレートのアレンジ"></button>
+    </div>
+    <div id="portraitBody" hidden>
+      <div class="field"><span class="lbl">アレンジの方向性（複数選択可）</span><div class="grid" id="arrangeGrid"></div></div>
+      <div class="field"><label for="portraitFeatures">残したい顔立ちの特徴（任意）</label>
+      <textarea id="portraitFeatures" rows="2" placeholder="例：丸みのある頬、前髪あり、柔らかい笑顔"></textarea></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="toggle-row">
+      <div><h2>SNSプロフィール画像の参照</h2><p class="sub">SNSプロフィール欄のスクリーンショットを2枚目の参照画像として渡し、そこに書かれた名前・肩書きなどを作品に反映する指示を追加します</p></div>
+      <button class="switch" id="snsSwitch" role="switch" aria-checked="false" aria-label="SNSプロフィール画像の参照"></button>
+    </div>
+    <div id="snsBody" hidden>
+      <div class="field"><label for="snsText">特に反映したい文言（任意）</label>
+      <textarea id="snsText" rows="2" placeholder="例：国語教師／授業道"></textarea></div>
+    </div>
+  </section>
+
+  <div id="catHost" class="col"></div>
+
+  <section class="card">
+    <h2>キャッチコピー・添え文</h2>
+    <p class="sub">短い日本語のコピーを、作品の中にタイポグラフィとして品よく配置する指示を追加します</p>
+    <div class="field"><label for="catchCopy">キャッチコピー（任意）</label><input type="text" id="catchCopy" placeholder="例：春は、あけぼの。"></div>
+    <div class="field"><label for="subText">添える一文（任意）</label><input type="text" id="subText" placeholder="例：やうやう白くなりゆく山ぎは"></div>
+    <div class="field"><span class="lbl">文字のスタイル（任意・1つ選択）</span><div class="chips" id="textStyleGrid"></div></div>
+    <div class="field"><span class="lbl">文字の位置（任意・1つ選択）</span><div class="chips" id="textPosGrid"></div><span class="hint">選ばない場合は「顔に重ならない空いた場所」に配置する指示が入ります</span></div>
+    <p class="note">日本語の文字をきれいに描けるのは Nano Banana（Gemini）や ChatGPT の画像生成などです。Stable Diffusion 系は日本語の文字がほぼ描けないため、文字はあとから Canva などで重ねるのが確実です。</p>
+  </section>
+
+  <section class="card">
+    <h2>基調色・特殊効果</h2>
+    <div class="field"><span class="lbl">季節の基調色から選ぶ（任意・1つ選択）</span><div class="chips" id="baseColorGrid"></div></div>
+    <div class="field"><label for="baseColor">基調となる色（任意）</label><input type="text" id="baseColor" placeholder="例：桜色と若草色"></div>
+    <div class="field"><span class="lbl">季節の効果から選ぶ（複数選択可）</span><div class="chips" id="effectsGrid"></div></div>
+    <div class="field"><label for="specialEffects">特殊効果・仕上げ（任意）</label><input type="text" id="specialEffects" placeholder="例：舞い散る花びら、和紙の質感"></div>
+  </section>
+
+  <section class="card">
+    <h2>構図・出力サイズ</h2>
+    <p class="sub">構図の指示はプロンプトの先頭に入ります（前にある指示ほど強く効くため）</p>
+    <div class="toggle-row" style="margin-top:14px">
+      <div><span class="lbl" style="font-size:13px;font-weight:700">頭が切れないようにする</span><p class="sub" style="margin:2px 0 0">頭の上に余白をとり、顔を中央寄りに置く指示を入れます</p></div>
+      <button class="switch" id="headroomSwitch" role="switch" aria-checked="true" aria-label="頭が切れないようにする"></button>
+    </div>
+    <div class="field"><span class="lbl">画角（任意・1つ選択）</span><div class="chips" id="framingGrid"></div></div>
+    <div class="field"><span class="lbl">アスペクト比（任意・1つ選択）</span><div class="chips" id="sizeGrid"></div></div>
+    <div class="field"><label for="customSize">サイズの直接指定（任意）</label><input type="text" id="customSize" placeholder="例：1024x1024、--ar 16:9"></div>
+  </section>
+</div>
+
+<aside class="out card">
+  <h2>生成されたプロンプト <span class="count" id="charCount">0 chars</span></h2>
+  <textarea id="promptOutput" readonly aria-label="生成されたプロンプト" placeholder="引き出しから項目を選ぶと、ここにプロンプトが表示されます"></textarea>
+  <button class="btn btn-primary" id="copyBtn">コピー</button>
+  <div class="btn-row">
+    <button class="btn btn-secondary" id="randomAll">全部ランダム</button>
+    <button class="btn btn-secondary" id="resetBtn">リセット</button>
+  </div>
+  <p class="foot">プロンプトは英語で生成されます。お使いの画像生成AI（Midjourney / Stable Diffusion / Nano Banana など）にそのまま貼り付けてください。</p>
+</aside>
+</div>
+</div>
+
+<script>
+(function(){
+const SEASONS=[["all","すべて"],["spring","春"],["summer","夏"],["autumn","秋"],["winter","冬"]];
+const SEASON_EN={spring:"spring",summer:"summer",autumn:"autumn",winter:"winter"};
+// [日本語ラベル, 英語プロンプト, 季節(spring/summer/autumn/winter/all)]
+const CATEGORIES=[
+{key:"scene",num:"01",title:"季節・行事の情景",sub:"舞台となる季節の行事や風景を1つ以上選びます",groups:[
+ {label:"春",items:[
+  ["梅見（早春の梅林）","an early-spring plum blossom grove with red and white blossoms against a pale sky","spring"],
+  ["雛祭り（桃の節句）","a Hinamatsuri doll festival scene with tiered hina dolls, peach blossoms, and soft lantern light","spring"],
+  ["お花見（満開の桜並木）","a path lined with cherry trees in full bloom, petals drifting through warm spring air","spring"],
+  ["夜桜（ぼんぼりの灯り）","cherry blossoms at night lit by paper bonbori lanterns, glowing pink against a deep blue sky","spring"],
+  ["新学期の校門と桜（門出×希望）","a school gate framed by cherry blossoms on the first day of a new school year","spring"],
+  ["藤棚の下（紫の花房）","beneath a wisteria trellis with long cascading purple flower clusters","spring"],
+  ["端午の節句（鯉のぼり×青空）","koinobori carp streamers swimming in a bright May sky over green fields","spring"]]},
+ {label:"夏",items:[
+  ["梅雨の紫陽花（雨×しっとり）","a rainy-season path of blooming hydrangeas, glistening raindrops, and soft overcast light","summer"],
+  ["七夕（笹飾り×天の川）","a Tanabata evening with bamboo branches hung with colorful wish strips under the Milky Way","summer"],
+  ["夏祭り・縁日（提灯×屋台）","a summer festival street with rows of red paper lanterns and lively food stalls at dusk","summer"],
+  ["花火大会（夜空×水面）","large fireworks blooming over a river at night, reflected on the dark water","summer"],
+  ["縁側と風鈴（涼×静けさ）","a quiet engawa veranda of a traditional house with a glass wind chime and a garden in summer green","summer"],
+  ["夏の海辺の夕暮れ（潮風×茜色）","a seaside at summer sunset with gentle waves and a sky of soft coral and gold","summer"],
+  ["灯籠流し（祈り×灯火）","floating paper lanterns drifting down a calm river at twilight, a quiet atmosphere of prayer","summer"]]},
+ {label:"秋",items:[
+  ["お月見（満月×すすき）","a moon-viewing night with a large full moon, pampas grass, and tsukimi dumplings on a stand","autumn"],
+  ["紅葉狩り（錦の山×渓流）","a mountain valley ablaze with red and orange maple leaves beside a clear stream","autumn"],
+  ["寺の紅葉と石段（古刹×静寂）","stone steps of an old temple covered with fallen crimson maple leaves","autumn"],
+  ["銀杏並木（黄金色の道）","an avenue of ginkgo trees with golden leaves carpeting the path","autumn"],
+  ["読書の秋（灯火×書斎）","a cozy study on a long autumn night, warm lamplight, stacked books, and a window with falling leaves","autumn"],
+  ["重陽の節句・菊花（菊×気品）","a chrysanthemum festival display with elegant large chrysanthemum blooms","autumn"],
+  ["秋の実り（稲穂×夕日）","golden rice fields at harvest time glowing in the setting sun","autumn"]]},
+ {label:"冬",items:[
+  ["初詣（神社×晴れ着）","a New Year's shrine visit with a vermilion torii gate, shimenawa rope, and crisp winter sunlight","winter"],
+  ["お正月の座敷（門松×鏡餅）","a traditional tatami room decorated for New Year with kadomatsu, kagami mochi, and a gold folding screen","winter"],
+  ["書き初め（墨×凛とした空気）","a bright winter room for New Year calligraphy with sheets of washi paper and an inkstone","winter"],
+  ["雪景色の寺社（雪化粧×静寂）","a temple and pagoda quietly covered in fresh snow, soft falling snowflakes","winter"],
+  ["雪見障子の室内（雪×ぬくもり）","a warm room viewing a snowy garden through a yukimi shoji window","winter"],
+  ["節分（豆まき×春を待つ）","a Setsubun scene with roasted beans in a wooden masu box and plum buds about to open","winter"],
+  ["冬の街のイルミネーション（光×夜）","a winter city street glowing with warm illuminations and soft falling snow","winter"]]}
+]},
+{key:"style",num:"02",title:"画風",sub:"絵のタッチや世界観を1つ以上選びます",groups:[
+ {label:"和の伝統表現",items:[
+  ["浮世絵・木版画風（版の線×平面色）","modern ukiyo-e woodblock print style with crisp outlines and flat color fields","all"],
+  ["日本画（岩絵具×金泥）","nihonga painting style with mineral pigments, gold pigment accents, and refined brushwork","all"],
+  ["琳派・金屏風風（装飾×金地）","Rinpa school decorative style on a gold-leaf folding screen background","all"],
+  ["墨絵×水彩（にじみ×余白）","sumi-e ink painting blended with soft watercolor washes and generous negative space","all"],
+  ["友禅染風（染め×花鳥）","yuzen dyed-textile style with delicate outlines and gradient dyed colors","all"],
+  ["切り絵・ちぎり絵（和紙×重なり）","layered washi paper-cut and torn-paper collage illustration with soft shadows","all"]]},
+ {label:"レトロ・ノスタルジー",items:[
+  ["大正ロマン挿絵（叙情×モダン）","Taisho-era romantic illustration style with lyrical lines and retro modern charm","all"],
+  ["昭和レトロポスター（懐旧×色刷り）","Showa-era retro poster style with limited-color printing and warm nostalgia","all"],
+  ["絵本の一場面（やさしさ×物語）","gentle storybook illustration style with soft textures and a narrative feel","all"]]},
+ {label:"ファッション・グラフィック",items:[
+  ["ファッションイラスト（線画×水彩）","elegant fashion illustration with fine ink lines and loose watercolor","all"],
+  ["モード誌の表紙（エディトリアル）","high-fashion magazine cover composition with an editorial layout","all"],
+  ["和柄×幾何学グラフィック（伝統×現代）","contemporary graphic design mixing traditional Japanese patterns with geometric shapes","all"],
+  ["シルクスクリーン風（版画×大胆）","minimalist silk-screen print look with bold shapes and slight misregistration","all"],
+  ["幻想的イラスト（夢幻×光）","ethereal, dreamlike illustration with soft glowing light","all"]]}
+]},
+{key:"subject",num:"03",title:"人物・仕草",sub:"人物のポーズや表情を1つ以上選びます",groups:[
+ {label:"季節の仕草",items:[
+  ["桜を見上げる（希望×柔光）","an elegant woman looking up at cherry blossoms with a calm, hopeful expression","spring"],
+  ["花びらを手で受ける（儚さ×微笑み）","a woman gently catching falling petals in her open palm with a soft smile","spring"],
+  ["和傘をさして紫陽花の小道を歩く","a woman walking along a hydrangea path holding a Japanese oil-paper umbrella","summer"],
+  ["団扇を手に涼む（涼×くつろぎ）","a woman cooling herself with a round uchiwa fan, relaxed and graceful","summer"],
+  ["短冊に願いを書く（願い×集中）","a woman writing a wish on a colorful tanzaku paper strip with a brush","summer"],
+  ["花火を見上げる横顔（感動×余韻）","a woman in profile looking up at fireworks, her face lit by their glow","summer"],
+  ["縁側で月を眺める（静けさ×思索）","a woman sitting on a veranda gazing at the moon, serene and thoughtful","autumn"],
+  ["紅葉を一枚手に取る（慈しみ×秋色）","a woman holding a single red maple leaf up to the light, gentle expression","autumn"],
+  ["本を開く秋の夜（知性×ぬくもり）","an intellectual woman reading a book by lamplight, absorbed and calm","autumn"],
+  ["雪の中で振り返る（凛×ドラマ）","a woman turning to look over her shoulder in falling snow, poised and dignified","winter"],
+  ["手に息を吹きかける（冬の寒さ×可憐）","a woman warming her hands with her breath on a cold winter day","winter"],
+  ["筆を執る書き初め（凛々しさ×集中）","a woman holding a calligraphy brush with a straight posture, focused and composed","winter"],
+  ["初詣で手を合わせる（祈り×静謐）","a woman with hands pressed together in prayer at a shrine, eyes gently closed","winter"]]},
+ {label:"通年",items:[
+  ["湯呑を両手で包む（温もり×癒し）","a woman holding a ceramic teacup with both hands, sharing a comforting smile","all"],
+  ["正面で穏やかに微笑む（親しみ×品）","a woman facing forward with a warm, composed smile and graceful posture","all"],
+  ["歩く後ろ姿（余韻×物語）","a woman walking away seen from behind, the scene unfolding ahead of her","all"],
+  ["語りかける姿勢（講師×親しみ）","an approachable woman gesturing naturally as if speaking to an audience","all"]]}
+]},
+{key:"outfit",num:"04",title:"装い",sub:"着物から和洋ミックスまで、衣装を1つ以上選びます",groups:[
+ {label:"和装",items:[
+  ["振袖（晴れやか×華）","a vivid furisode kimono with long flowing sleeves and an ornate obi","winter"],
+  ["訪問着（上品×絵羽模様）","an elegant homongi kimono with a continuous painted pattern across the hem","all"],
+  ["小紋×名古屋帯（日常の粋）","a fine-patterned komon kimono with a Nagoya obi, refined and casual","all"],
+  ["浴衣（涼やか×夏柄）","a crisp cotton yukata with summer motifs and a simple half-width obi","summer"],
+  ["袴（女学生×門出）","a Taisho-style kimono with hakama trousers and boots, like a graduation outfit","spring"],
+  ["羽織×着物（重ね×温もり）","a kimono layered with a haori jacket in autumn tones","autumn"],
+  ["道行コート×ショール（冬の和装）","a kimono with a michiyuki coat and a soft shawl for winter","winter"]]},
+ {label:"和洋ミックス",items:[
+  ["着物×レース×ブーツ（和洋折衷）","a modern kimono styled with a lace collar, a hat, and lace-up boots","all"],
+  ["着物リメイクのドレス（伝統×モード）","a contemporary dress tailored from vintage kimono fabric","all"],
+  ["帯ベルト×ワンピース（和柄×洋服）","a simple dress cinched with an obi-style belt in a traditional pattern","all"],
+  ["羽織×タートルネック×パンツ（和×モード）","a haori jacket layered over a turtleneck and wide trousers","all"]]},
+ {label:"洋装・春",items:[
+  ["トレンチコート×ストール（春の街）","a light trench coat with a soft pastel stole","spring"],
+  ["ノーカラージャケット×ワンピース（入学式・式典）","a collarless tweed jacket over a pastel dress, ceremony-ready and refined","spring"],
+  ["シフォンブラウス×フレアスカート（軽やか×可憐）","a sheer chiffon blouse with a flowing midi flare skirt","spring"],
+  ["花柄ワンピース×カーディガン（花×やさしさ）","a floral print dress with a light knit cardigan","spring"],
+  ["パステルのパンツスーツ（爽やか×知的）","a pastel-colored tailored pantsuit","spring"]]},
+ {label:"洋装・夏",items:[
+  ["麻のワンピース×かごバッグ（涼×ナチュラル）","a breezy linen dress with a woven basket bag","summer"],
+  ["白いシャツワンピース×麦わら帽子","a crisp white shirt dress and a straw hat","summer"],
+  ["マキシ丈サマードレス（海辺×優雅）","a flowing maxi summer dress with delicate straps","summer"],
+  ["ノースリーブブラウス×ワイドパンツ（すっきり×大人）","a sleeveless blouse with breezy wide-leg trousers","summer"],
+  ["ボーダー×マリンスタイル（爽快×港町）","a striped Breton top with white trousers in a marine style","summer"]]},
+ {label:"洋装・秋",items:[
+  ["ニット×チェックのストール（ぬくもり×秋色）","a cozy knit sweater with a plaid wool stole","autumn"],
+  ["ツイードジャケット×プリーツスカート（知的×クラシック）","a tweed jacket with a pleated midi skirt","autumn"],
+  ["スエードジャケット×ロングスカート（秋色×大人）","a suede jacket with a long flowing skirt in autumn tones","autumn"],
+  ["ベレー帽×ケープコート（文学少女風）","a beret and a short cape coat, with a literary, retro charm","autumn"],
+  ["ベロアのワンピース（艶×深い色）","a velvet dress in a deep autumn color","autumn"]]},
+ {label:"洋装・冬",items:[
+  ["ロングコート×マフラー（冬の街）","a long wool coat with a thick scarf and leather gloves","winter"],
+  ["ファー襟コート×手袋（華やか×防寒）","an elegant coat with a soft faux-fur collar and gloves","winter"],
+  ["ケーブルニット×ロングスカート（ぬくもり×素朴）","a chunky cable-knit sweater with a long wool skirt","winter"],
+  ["パーティードレス×ショール（聖夜×華）","an elegant evening party dress with a sparkling shawl","winter"],
+  ["ダッフルコート×ニット帽（冬休み×かわいらしさ）","a duffle coat with a knit beanie","winter"]]},
+ {label:"洋装・通年",items:[
+  ["テーラードジャケット×パンツ（講師・登壇）","a tailored blazer and trousers, polished and ready for a lecture","all"],
+  ["シャツ×ロングスカート（きちんと×柔らか）","a crisp shirt with a long flowing skirt","all"],
+  ["リトルブラックドレス（定番×品）","a classic little black dress with simple elegance","all"],
+  ["ブラウス×カーディガン（先生らしい上品さ）","a soft blouse with a cardigan draped over the shoulders","all"]]}
+]},
+{key:"color",num:"05",title:"季節の配色",sub:"重ねの色目や伝統色を手がかりにした配色を1つ以上選びます",groups:[
+ {label:"春",items:[
+  ["桜（白×薄紅）","cherry blossom white, pale sakura pink, soft blush, and fresh spring green","spring"],
+  ["紅梅（紅×蘇芳）","plum blossom pink, deep sappanwood red, warm ivory, and dark plum brown","spring"],
+  ["藤（藤紫×若葉）","wisteria lavender, soft violet, young leaf green, and pearl white","spring"],
+  ["山吹（黄金×若草）","kerria golden yellow, young grass green, cream, and pale sky blue","spring"]]},
+ {label:"夏",items:[
+  ["菖蒲（紫×青緑）","iris purple, deep blue-green, white, and silver","summer"],
+  ["青楓（瑞々しい緑）","fresh maple green, celadon, clear water blue, and white","summer"],
+  ["紫陽花（青×藤×雨色）","hydrangea blue, soft violet, rain gray, and mint","summer"],
+  ["夏の夜（藍×金）","deep indigo night, lantern gold, vermilion, and ink black","summer"]]},
+ {label:"秋",items:[
+  ["紅葉（紅×黄）","maple crimson, burnt orange, ginkgo yellow, and deep brown","autumn"],
+  ["朽葉（枯れ葉色×栗色）","fallen-leaf ochre, chestnut brown, mustard, and muted olive","autumn"],
+  ["月見（銀鼠×藍）","silver gray, moonlight cream, deep indigo, and pampas beige","autumn"],
+  ["菊（黄菊×白菊）","chrysanthemum yellow, white, pale green, and imperial purple","autumn"]]},
+ {label:"冬",items:[
+  ["雪の下（白×紅）","snow white, camellia red, pale pink, and dark evergreen","winter"],
+  ["松の雪（常磐色×白）","pine green, snow white, ink black, and gold","winter"],
+  ["椿（深紅×濃緑）","deep camellia red, glossy dark green, golden stamen yellow, and cream","winter"],
+  ["正月（紅白×金）","auspicious red, pure white, gold leaf, and black lacquer","winter"]]}
+]},
+{key:"motif",num:"06",title:"モチーフ・小物",sub:"画面に添える季節の小物を1つ以上選びます",groups:[
+ {label:"季節の小物",items:[
+  ["桜の花びら・桜の枝","drifting cherry petals and a cherry blossom branch","spring"],
+  ["雛人形・貝合わせ","small hina dolls and painted clam shells for kaiawase","spring"],
+  ["鯉のぼり・兜飾り","koinobori carp streamers and a samurai helmet ornament","spring"],
+  ["風鈴・金魚","a glass wind chime and red goldfish in a glass bowl","summer"],
+  ["朝顔・団扇","morning glory flowers and a painted uchiwa fan","summer"],
+  ["短冊・笹飾り","bamboo branches with colorful tanzaku wish strips","summer"],
+  ["線香花火","a sparkling senko hanabi handheld firework","summer"],
+  ["月・すすき・月見団子","a full moon, pampas grass, and tsukimi dumplings","autumn"],
+  ["紅葉と銀杏の葉","scattered red maple and golden ginkgo leaves","autumn"],
+  ["柿・栗・本","persimmons, chestnuts, and a stack of books","autumn"],
+  ["雪うさぎ・南天","a small snow rabbit with nandina berry eyes and leaves","winter"],
+  ["椿の花","red camellia flowers with glossy leaves","winter"],
+  ["門松・鏡餅・羽子板","kadomatsu, kagami mochi, and a decorated hagoita paddle","winter"]]},
+ {label:"通年",items:[
+  ["和傘","a Japanese oil-paper umbrella","all"],
+  ["手まり・折り鶴","a colorful temari ball and origami cranes","all"],
+  ["手紙と万年筆（文の便り）","a handwritten letter on washi paper and a fountain pen","all"],
+  ["湯呑と和菓子","a ceramic teacup and seasonal wagashi sweets","all"],
+  ["筆と硯","a calligraphy brush and an inkstone","all"]]}
+]}
+];
+const TEXT_STYLES=[
+ ["筆文字・手書き調","in expressive Japanese brush calligraphy"],
+ ["モダン明朝","in refined modern Mincho serif typography"],
+ ["縦書き・落款風","set vertically in traditional style with a small red seal stamp"],
+ ["太めゴシック","in bold, clean Gothic sans-serif"],
+ ["活版・スタンプ風","in letterpress-style type with a slightly worn texture"],
+ ["エレガント筆記体","in elegant flowing script lettering"],
+ ["ゴールド・箔押し","in gold foil-stamped lettering"],
+ ["大正ロマン風レタリング","in Taisho-era retro decorative lettering"],
+ ["極細・ミニマル","in ultra-thin minimalist lettering"]];
+const BASE_COLORS=[
+ ["桜色と若草色","cherry blossom pink and young grass green","spring"],
+ ["藤色と白練","wisteria lavender and soft white","spring"],
+ ["藍色と金","deep indigo and gold","summer"],
+ ["水色と白","clear water blue and white","summer"],
+ ["紅葉色と山吹色","maple red and kerria yellow","autumn"],
+ ["銀鼠と月白","silver gray and moonlight white","autumn"],
+ ["紅白と金","auspicious red, white, and gold","winter"],
+ ["雪白と常磐色","snow white and evergreen","winter"]];
+const SPECIAL_EFFECTS=[
+ ["舞い散る花びら","drifting petals in the air","spring"],
+ ["春霞","a soft spring haze","spring"],
+ ["雨粒のきらめき","glistening raindrops","summer"],
+ ["提灯・花火の灯り","warm lantern and firework glow","summer"],
+ ["木漏れ日","dappled sunlight through leaves","all"],
+ ["舞い落ちる紅葉","falling autumn leaves","autumn"],
+ ["月光","cool silvery moonlight","autumn"],
+ ["舞う雪","gently falling snowflakes","winter"],
+ ["金箔の光沢","gold leaf shimmer","all"],
+ ["和紙の質感","subtle washi paper texture","all"],
+ ["水彩のにじみ","soft watercolor bleeding","all"],
+ ["フィルムグレイン","nostalgic film grain","all"]];
+const SIZES=[["正方形（1:1）","square 1:1 aspect ratio"],["縦長（2:3）","vertical 2:3 portrait aspect ratio"],["スマホ縦長（9:16）","vertical 9:16 aspect ratio"],["横長ワイド（16:9）","wide 16:9 aspect ratio"],["横長（4:3）","4:3 aspect ratio"],["note見出し（1280×670）","1280x670 horizontal banner, about 1.91:1"],["A4縦","A4 portrait print format"]];
+
+const ARRANGES=[
+ ["スタイリッシュ","stylish and sophisticated, with a sharp, polished overall look"],
+ ["ファッショナブル","fashionable, with a fashion-forward styling sensibility"],
+ ["幻想的","ethereal and dreamlike, softly wrapped in luminous atmosphere"],
+ ["デフォルメ強め","with stronger stylization and illustrative simplification, while keeping the likeness recognizable"],
+ ["若々しく・見映えよく","looking youthful, fresh, and at their most flattering"],
+ ["背景と調和するイラスト化","fully integrated into the background as one cohesive illustration, with matching lighting and brushwork"],
+ ["女優風","with a poised, elegant, actress-like bearing and graceful presence"],
+ ["鼻筋の通った","with a gently defined, straight nose bridge that still stays true to their own nose"],
+ ["透明感のある肌","with clear, luminous, translucent skin"]];
+const HARMONY=ARRANGES[5][1];
+const arranges=new Set();
+let season="all";
+const selected={}; CATEGORIES.forEach(c=>selected[c.key]=new Set());
+const FRAMINGS=[
+ ["バストアップ（胸から上）","Composition: a bust-up shot from the chest up."],
+ ["上半身（腰から上）","Composition: a waist-up shot showing the upper body."],
+ ["膝上（7分丈）","Composition: a three-quarter shot from the knees up."],
+ ["全身（引きの構図）","Composition: a full-body shot with the whole figure and surroundings visible."],
+ ["顔のアップ（頭まで入れる）","Composition: a close-up portrait of the face and shoulders, still including the whole head."]];
+const TEXT_POS=[
+ ["上部に横書き","across the top of the image above the head"],
+ ["下部に横書き","across the bottom of the image"],
+ ["左側に縦書き","vertically along the left side in tategaki vertical writing"],
+ ["右側に縦書き","vertically along the right side in tategaki vertical writing"]];
+const DEFAULT_FRAMING=FRAMINGS[0][1];
+let framingPick=DEFAULT_FRAMING,headroomOn=true,textPosPick=null;
+let textStyle=null,baseColorPick=null,sizePick=null; const effects=new Set();
+let portraitOn=false,snsOn=false;
+const $=id=>document.getElementById(id);
+const fits=s=>season==="all"||s==="all"||s===season;
+
+function mkOpt(item,on,onClick){
+  const b=document.createElement("button");b.type="button";b.className="opt";b.setAttribute("aria-pressed",on);
+  b.innerHTML='<span class="jp"></span><span class="en"></span>';
+  b.querySelector(".jp").textContent=item[0];b.querySelector(".en").textContent=item[1];
+  b.onclick=onClick;return b;
+}
+function mkChip(label,on,onClick){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.setAttribute("aria-pressed",on);b.onclick=onClick;return b;}
+
+function renderSeason(){
+  const bar=$("seasonBar");bar.innerHTML="";
+  SEASONS.forEach(([k,l])=>bar.appendChild(mkChip(l,season===k,()=>{season=k;
+    if(k==="all")document.documentElement.removeAttribute("data-season");else document.documentElement.setAttribute("data-season",k);
+    renderAll();})));
+}
+function renderCats(){
+  const host=$("catHost");host.innerHTML="";
+  CATEGORIES.forEach(c=>{
+    const sec=document.createElement("section");sec.className="card";
+    sec.innerHTML='<div class="card-head"><div><h2><span class="num">'+c.num+'</span>'+c.title+'</h2><p class="sub">'+c.sub+'</p></div></div>';
+    const rb=document.createElement("button");rb.type="button";rb.className="btn-ghost";rb.textContent="この項目だけランダム";
+    rb.onclick=()=>{randomCat(c);renderAll();};sec.querySelector(".card-head").appendChild(rb);
+    let shown=0;
+    c.groups.forEach(g=>{
+      const items=g.items.filter(i=>fits(i[2]));if(!items.length)return;
+      const gl=document.createElement("div");gl.className="group-label";gl.textContent=g.label;sec.appendChild(gl);
+      const grid=document.createElement("div");grid.className="grid";
+      items.forEach(i=>{shown++;grid.appendChild(mkOpt(i,selected[c.key].has(i[1]),()=>{
+        selected[c.key].has(i[1])?selected[c.key].delete(i[1]):selected[c.key].add(i[1]);renderAll();}));});
+      sec.appendChild(grid);
+    });
+    if(!shown){const p=document.createElement("p");p.className="empty";p.textContent="この季節の項目はありません";sec.appendChild(p);}
+    host.appendChild(sec);
+  });
+}
+function renderExtras(){
+  const ts=$("textStyleGrid");ts.innerHTML="";
+  TEXT_STYLES.forEach(t=>ts.appendChild(mkChip(t[0],textStyle===t[1],()=>{textStyle=textStyle===t[1]?null:t[1];renderAll();})));
+  const bc=$("baseColorGrid");bc.innerHTML="";
+  BASE_COLORS.filter(b=>fits(b[2])).forEach(b=>bc.appendChild(mkChip(b[0],baseColorPick===b[1],()=>{baseColorPick=baseColorPick===b[1]?null:b[1];renderAll();})));
+  const ef=$("effectsGrid");ef.innerHTML="";
+  SPECIAL_EFFECTS.filter(e=>fits(e[2])).forEach(e=>ef.appendChild(mkChip(e[0],effects.has(e[1]),()=>{effects.has(e[1])?effects.delete(e[1]):effects.add(e[1]);renderAll();})));
+  const ag=$("arrangeGrid");ag.innerHTML="";
+  ARRANGES.forEach(a=>{const b=mkOpt(a,arranges.has(a[1]),()=>{arranges.has(a[1])?arranges.delete(a[1]):arranges.add(a[1]);renderAll();});b.querySelector(".en").remove();ag.appendChild(b);});
+  const fr=$("framingGrid");fr.innerHTML="";
+  FRAMINGS.forEach(f=>fr.appendChild(mkChip(f[0],framingPick===f[1],()=>{framingPick=framingPick===f[1]?null:f[1];renderAll();})));
+  const tp=$("textPosGrid");tp.innerHTML="";
+  TEXT_POS.forEach(t=>tp.appendChild(mkChip(t[0],textPosPick===t[1],()=>{textPosPick=textPosPick===t[1]?null:t[1];renderAll();})));
+  $("headroomSwitch").setAttribute("aria-checked",headroomOn);
+  const sz=$("sizeGrid");sz.innerHTML="";
+  SIZES.forEach(s=>sz.appendChild(mkChip(s[0],sizePick===s[1],()=>{sizePick=sizePick===s[1]?null:s[1];renderAll();})));
+}
+function randomCat(c){
+  const pool=c.groups.flatMap(g=>g.items).filter(i=>fits(i[2]));
+  selected[c.key].clear();if(pool.length)selected[c.key].add(pool[Math.floor(Math.random()*pool.length)][1]);
+}
+function list(arr){return arr.length<2?arr.join(""):arr.slice(0,-1).join(", ")+", and "+arr[arr.length-1];}
+
+function update(){
+  const parts=[];
+  const order=["subject","outfit","style","scene","motif","color"];
+  order.forEach(k=>{if(selected[k].size)parts.push([...selected[k]].join(", "));});
+  // 先頭に置く指示（構図・文字）：画像生成AIは前のほうの指示ほど強く反映するため
+  const head=[];
+  if(framingPick)head.push(framingPick);
+  if(portraitOn&&arranges.has(HARMONY))head.push("Most important: the person's face, skin, and hair must be painted in exactly the same illustration style, brushwork, texture, and color grading as the background, so the whole image looks like one single painting. The face must not look photographic or pasted in. Light the face with the same light sources as the scene (for example warm lamplight, with soft shadows on one side), and give the skin the same warm color cast as the surroundings.");
+  if(headroomOn)head.push("Keep the entire head and all of the hair fully inside the frame with clear empty space above the head; never crop the top of the head. Place the face slightly above the center of the image, horizontally centered.");
+  const cc=$("catchCopy").value.trim(),st=$("subText").value.trim();
+  if(cc||st){
+    let t="The image MUST include clearly legible Japanese text: "+(cc?'"'+cc+'"':'"'+st+'"');
+    if(cc&&st)t+=' as the main headline, with the smaller phrase "'+st+'"';
+    t+=", rendered exactly as written"+(textStyle?", "+textStyle:"");
+    t+=", placed "+(textPosPick||"in an open area that does not overlap the face")+", as an elegant typographic element integrated into the design.";
+    head.push(t);
+  }
+  let out=head.join(" ");
+  if(parts.length){const body=parts.join(", ");out+=(out?" ":"")+body.charAt(0).toUpperCase()+body.slice(1)+".";}
+  const extra=[];
+  if(season!=="all")extra.push("The whole image should evoke the atmosphere of "+SEASON_EN[season]+" in Japan, with a clear seasonal feeling.");
+  const bcs=[baseColorPick,$("baseColor").value.trim()].filter(Boolean);
+  if(bcs.length)extra.push("Use "+bcs.join(" / ")+" as the dominant base colors.");
+  const efs=[...effects];const ce=$("specialEffects").value.trim();if(ce)efs.push(ce);
+  if(efs.length)extra.push("Finish with special effects: "+efs.join(", ")+".");
+  if(portraitOn){
+    let p="Using the attached reference portrait only as a likeness reference, redraw the person from scratch as a fully illustrated character who naturally belongs in this seasonal Japanese scene. Do not copy or paste the photo itself: do not keep its photographic skin texture, its lighting, or its color tone. Keep only their recognizable features: the same face shape, the same eye shape, size and spacing, the same nose, the same mouth and smile, and their hairstyle and hair length, without idealizing them into a generic beauty. Reinterpret the pose, camera angle, clothing, and styling to match the mood of this artwork.";
+    if(arranges.size)p+=" Render them "+list([...arranges])+".";
+    const f=$("portraitFeatures").value.trim();if(f)p+=" Be sure to keep these distinctive features: "+f+".";
+    extra.push(p);
+  }
+  if(snsOn){
+    let s="A second reference image showing the person's SNS profile screenshot is also attached; use it as a reference for their identity, incorporating the name, title, or tagline visible in it into the artwork's typography and styling.";
+    const t=$("snsText").value.trim();if(t)s+=' Give special prominence to: "'+t+'".';
+    extra.push(s);
+  }
+  const sizes=[sizePick,$("customSize").value.trim()].filter(Boolean);
+  if(sizes.length)extra.push("Output size: "+sizes.join(", ")+".");
+  if(extra.length)out+=(out?" ":"")+extra.join(" ");
+  $("promptOutput").value=out;$("charCount").textContent=out.length+" chars";
+}
+function renderAll(){renderSeason();renderCats();renderExtras();update();}
+
+function setSwitch(btn,body,on){btn.setAttribute("aria-checked",on);body.hidden=!on;}
+$("portraitSwitch").onclick=()=>{portraitOn=!portraitOn;setSwitch($("portraitSwitch"),$("portraitBody"),portraitOn);update();};
+$("snsSwitch").onclick=()=>{snsOn=!snsOn;setSwitch($("snsSwitch"),$("snsBody"),snsOn);update();};
+["portraitFeatures","snsText","catchCopy","subText","baseColor","specialEffects","customSize"].forEach(id=>$(id).addEventListener("input",update));
+$("headroomSwitch").onclick=()=>{headroomOn=!headroomOn;renderAll();};
+$("randomAll").onclick=()=>{CATEGORIES.forEach(randomCat);renderAll();};
+$("resetBtn").onclick=()=>{
+  CATEGORIES.forEach(c=>selected[c.key].clear());effects.clear();arranges.clear();textStyle=baseColorPick=sizePick=textPosPick=null;framingPick=DEFAULT_FRAMING;headroomOn=true;
+  ["portraitFeatures","snsText","catchCopy","subText","baseColor","specialEffects","customSize"].forEach(id=>$(id).value="");
+  portraitOn=snsOn=false;setSwitch($("portraitSwitch"),$("portraitBody"),false);setSwitch($("snsSwitch"),$("snsBody"),false);
+  renderAll();
+};
+$("copyBtn").onclick=()=>{
+  const v=$("promptOutput").value;if(!v)return;const b=$("copyBtn");
+  const done=()=>{b.textContent="コピーしました";setTimeout(()=>b.textContent="コピー",1500);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(v).then(done).catch(()=>{$("promptOutput").select();document.execCommand("copy");done();});}
+  else{$("promptOutput").select();document.execCommand("copy");done();}
+};
+renderAll();
+})();
+</script>
+</body>
+</html>
